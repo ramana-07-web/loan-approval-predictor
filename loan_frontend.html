@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loan Approval Predictor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      margin-top: 2rem;
+    }
+
+    /* Glassmorphism Card */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .header-section {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    p.subtitle {
+      color: var(--text-dim);
+      font-size: 1.1rem;
+    }
+
+    /* API Config Section */
+    .api-config {
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 16px;
+      border: 1px dashed var(--glass-border);
+    }
+    
+    .api-config label {
+      display: block;
+      color: #cbd5e1;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    /* Form Grid */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: white;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    select option {
+      background: #1e293b;
+      color: white;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 2.5rem;
+      padding: 1.2rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Result Modal */
+    #result-container {
+      display: none;
+      margin-top: 2rem;
+      animation: slideUp 0.5s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-card {
+      text-align: center;
+      padding: 2rem;
+      border-radius: 20px;
+    }
+
+    .approved {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .approved h2 { color: #4ade80; }
+
+    .rejected {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .rejected h2 { color: #f87171; }
+
+    .result-reason {
+      margin-top: 1rem;
+      color: var(--text-dim);
+    }
+
+    #loading {
+      display: none;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--glass-border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="glass-card">
+      
+      <div class="header-section">
+        <h1>Loan Approval Predictor</h1>
+        <p class="subtitle">AI-powered risk assessment engine</p>
+      </div>
+
+      <!-- API Configuration -->
+      <div class="api-config">
+        <label for="apiUrl">🔗 Vercel API URL</label>
+        <input type="text" id="apiUrl" value="https://YOUR-VERCEL-URL.vercel.app/predict" placeholder="https://....vercel.app/predict" />
+        <small style="color: #94a3b8; display: block; margin-top: 0.5rem; font-size: 0.85rem;">
+          Replace with your actual Vercel deployment URL (make sure it ends in <code>/predict</code>)
+        </small>
+      </div>
+
+      <form id="loanForm">
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Gender</label>
+            <select id="Gender" required>
+              <option value="1">Male</option>
+              <option value="0">Female</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Marital Status</label>
+            <select id="Married" required>
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Dependents</label>
+            <select id="Dependents" required>
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3+</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Education</label>
+            <select id="Education" required>
+              <option value="1">Graduate</option>
+              <option value="0">Not Graduate</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Self Employed</label>
+            <select id="Self_Employed" required>
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Applicant Income ($)</label>
+            <input type="number" id="ApplicantIncome" value="5000" min="0" required>
+          </div>
+
+          <div class="input-group">
+            <label>Coapplicant Income ($)</label>
+            <input type="number" id="CoapplicantIncome" value="0" min="0" required>
+          </div>
+
+          <div class="input-group">
+            <label>Loan Amount (in thousands)</label>
+            <input type="number" id="LoanAmount" value="150" min="1" required>
+          </div>
+
+          <div class="input-group">
+            <label>Loan Amount Term (days)</label>
+            <input type="number" id="Loan_Amount_Term" value="360" min="1" required>
+          </div>
+
+          <div class="input-group">
+            <label>Credit History</label>
+            <select id="Credit_History" required>
+              <option value="1">Good (1.0)</option>
+              <option value="0">Bad (0.0)</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Property Area</label>
+            <select id="Property_Area" required>
+              <option value="2">Urban</option>
+              <option value="1">Semiurban</option>
+              <option value="0">Rural</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">Analyze Application ✨</button>
+      </form>
+
+      <!-- Loading State -->
+      <div id="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; color: var(--text-dim);">Analyzing application with Random Forest...</p>
+      </div>
+
+      <!-- Result Section -->
+      <div id="result-container">
+        <div id="result-card" class="result-card">
+          <h2 id="result-status" style="font-size: 2rem; font-weight: 700;">Approved</h2>
+          <p id="result-reason" class="result-reason">Good credit history, Stable income</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loanForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const apiUrl = document.getElementById('apiUrl').value.trim();
+      const resultContainer = document.getElementById('result-container');
+      const resultCard = document.getElementById('result-card');
+      const resultStatus = document.getElementById('result-status');
+      const resultReason = document.getElementById('result-reason');
+      const loading = document.getElementById('loading');
+      const submitBtn = document.getElementById('submitBtn');
+
+      // Hide previous results and show loading
+      resultContainer.style.display = 'none';
+      submitBtn.style.display = 'none';
+      loading.style.display = 'block';
+
+      // Gather form data
+      const payload = {
+        Gender: parseInt(document.getElementById('Gender').value),
+        Married: parseInt(document.getElementById('Married').value),
+        Dependents: parseInt(document.getElementById('Dependents').value),
+        Education: parseInt(document.getElementById('Education').value),
+        Self_Employed: parseInt(document.getElementById('Self_Employed').value),
+        ApplicantIncome: parseInt(document.getElementById('ApplicantIncome').value),
+        CoapplicantIncome: parseFloat(document.getElementById('CoapplicantIncome').value),
+        LoanAmount: parseFloat(document.getElementById('LoanAmount').value),
+        Loan_Amount_Term: parseFloat(document.getElementById('Loan_Amount_Term').value),
+        Credit_History: parseInt(document.getElementById('Credit_History').value),
+        Property_Area: parseInt(document.getElementById('Property_Area').value),
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        // Reveal results
+        loading.style.display = 'none';
+        submitBtn.style.display = 'block';
+        resultContainer.style.display = 'block';
+
+        if (!response.ok) {
+          resultCard.className = 'result-card rejected';
+          resultStatus.innerText = 'Error';
+          resultReason.innerText = data.error || 'Check API URL and try again.';
+          return;
+        }
+
+        if (data.prediction === 1) {
+          resultCard.className = 'result-card approved';
+          resultStatus.innerText = '🎉 Approved';
+          resultReason.innerText = 'Reasoning: ' + data.reason;
+        } else {
+          resultCard.className = 'result-card rejected';
+          resultStatus.innerText = '❌ Rejected';
+          resultReason.innerText = 'Reasoning: ' + data.reason;
+        }
+
+      } catch (error) {
+        loading.style.display = 'none';
+        submitBtn.style.display = 'block';
+        resultContainer.style.display = 'block';
+        resultCard.className = 'result-card rejected';
+        resultStatus.innerText = 'Connection Failed';
+        resultReason.innerText = "Couldn't reach the API. Is your Vercel URL correct?";
+      }
+    });
+  </script>
+</body>
+</html>

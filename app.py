@@ -1,9 +1,11 @@
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pickle
 import numpy as np
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Base directory for relative paths (Required for Vercel)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
