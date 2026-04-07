@@ -60,6 +60,7 @@
       font-weight: 700;
       background: linear-gradient(to right, #818cf8, #c084fc);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 0.5rem;
     }
@@ -218,14 +219,7 @@
         <p class="subtitle">AI-powered risk assessment engine</p>
       </div>
 
-      <!-- API Configuration -->
-      <div class="api-config">
-        <label for="apiUrl">🔗 Vercel API URL</label>
-        <input type="text" id="apiUrl" value="https://YOUR-VERCEL-URL.vercel.app/predict" placeholder="https://....vercel.app/predict" />
-        <small style="color: #94a3b8; display: block; margin-top: 0.5rem; font-size: 0.85rem;">
-          Replace with your actual Vercel deployment URL (make sure it ends in <code>/predict</code>)
-        </small>
-      </div>
+      <!-- API Configuration (Removed for seamless integration) -->
 
       <form id="loanForm">
         <div class="form-grid">
@@ -333,7 +327,7 @@
     document.getElementById('loanForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const apiUrl = document.getElementById('apiUrl').value.trim();
+      const apiUrl = '/predict';
       const resultContainer = document.getElementById('result-container');
       const resultCard = document.getElementById('result-card');
       const resultStatus = document.getElementById('result-status');

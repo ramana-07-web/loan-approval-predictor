@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import pickle
 import numpy as np
@@ -16,10 +16,10 @@ with open(os.path.join(BASE_DIR, "model.pkl"), "rb") as f:
 with open(os.path.join(BASE_DIR, "scaler.pkl"), "rb") as f:
     scaler = pickle.load(f)
 
-# Home route (for browser testing)
+# Home route (Serves the interactive frontend)
 @app.route("/")
 def home():
-    return "Loan Prediction API is running"
+    return send_file(os.path.join(BASE_DIR, "loan_frontend.html"))
 
 # Prediction route
 @app.route("/predict", methods=["POST"])
