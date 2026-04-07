@@ -5,10 +5,13 @@ import numpy as np
 
 app = Flask(__name__)
 
+# Base directory for relative paths (Required for Vercel)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Load model and scaler using context managers
-with open("model.pkl", "rb") as f:
+with open(os.path.join(BASE_DIR, "model.pkl"), "rb") as f:
     model = pickle.load(f)
-with open("scaler.pkl", "rb") as f:
+with open(os.path.join(BASE_DIR, "scaler.pkl"), "rb") as f:
     scaler = pickle.load(f)
 
 # Home route (for browser testing)
